@@ -63,7 +63,7 @@ public class DBHelper extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getWritableDatabase();
         db.execSQL("drop table if exists " + STALKER_TABLE + "");
         db.execSQL("drop table if exists " + VICTIM_TABLE + "");
-        db.execSQL(createStalker;
+        db.execSQL(createStalker);
         db.execSQL(createVictim);
         db.close();
     }
