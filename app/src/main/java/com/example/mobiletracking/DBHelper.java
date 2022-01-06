@@ -1,5 +1,6 @@
 package com.example.mobiletracking;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
@@ -45,6 +46,7 @@ public class DBHelper extends SQLiteOpenHelper {
         super(context, DBNAME, null, VER);
     }
 
+    //Fonctions basiques de la base
     @Override
     public void onCreate(SQLiteDatabase db) {
         db.execSQL(createStalker);
@@ -66,5 +68,40 @@ public class DBHelper extends SQLiteOpenHelper {
         db.execSQL(createStalker);
         db.execSQL(createVictim);
         db.close();
+    }
+
+    //Fonction pour la table Stalker
+    //Ajout d'un élément dans la table
+    public long addStalker(Stalker stalker){
+        long insertId = -1;
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(STALKER_ID, stalker.getId());
+        values.put(STALKER_TEL, stalker.getTel());
+        values.put(STALKER_LOCALISATION, stalker.getLocalisation());
+
+        // Inserting Row
+        insertId = db.insert(STALKER_TABLE, null, values);
+        db.close(); // Closing database connection
+        return insertId;
+    }
+
+    //Fonction pour la table Victim
+    //Ajout d'un élément dans la table
+    public long addVictim(Victim victim){
+        long insertId = -1;
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(VICTIM_ID, victim.getId());
+        values.put(VICTIM_NBPAS, victim.getNbPas());
+        values.put(VICTIM_AVGSPEED, victim.getAvgSpeed());
+        values.put(VICTIM_DISTPARCOURU, victim.getDistParcouru());
+        values.put(VICTIM_DATE, victim.getDate());
+        values.put(VICTIM_HEURE, victim.getHeure());
+
+        // Inserting Row
+        insertId = db.insert(VICTIM_TABLE, null, values);
+        db.close(); // Closing database connection
+        return insertId;
     }
 }
