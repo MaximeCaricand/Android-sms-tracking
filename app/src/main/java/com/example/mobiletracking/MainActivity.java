@@ -28,6 +28,11 @@ public class MainActivity extends AppCompatActivity {
         startActivity(settingsIntent);
     }
 
+    public void openMap(View view) {
+        Intent settingsIntent = new Intent(this, MapActivity.class);
+        startActivity(settingsIntent);
+    }
+
     public void clearDB(View view) {
         this.dbHandler.clearTable();
     }
