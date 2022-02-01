@@ -3,6 +3,11 @@
     package="com.example.mobiletracking">
 
     <uses-permission android:name="android.permission.SEND_SMS"/>
+    <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION"/>
+
+    <uses-feature
+        android:name="android.hardware.sensor.stepcounter"
+        android:required="true"/>
 
     <application
         android:allowBackup="true"
