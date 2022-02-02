@@ -3,6 +3,7 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="..\:/M2/AndroidStudioProjects/mobile-tracking/app/src/main/res/layout/activity_pedometer.xml" value="0.14990942028985507" />
         <entry key="app/src/main/res/layout/activity_main.xml" value="0.27309782608695654" />
         <entry key="app/src/main/res/layout/activity_pedometer.xml" value="0.266304347826087" />
       </map>

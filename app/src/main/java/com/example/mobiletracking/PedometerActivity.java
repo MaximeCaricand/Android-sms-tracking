@@ -119,7 +119,7 @@ public class PedometerActivity extends AppCompatActivity implements SensorEventL
         int tmp = currentCounter - startCounter;
         if (tmp < 0)
             tmp = 0;
-        String msg = tmp + " steps";
+        String msg = tmp + "  PAS";
         tvPedometer.setText(msg);
     }
 
