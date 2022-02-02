@@ -2,6 +2,7 @@ package com.example.mobiletracking;
 
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.FragmentManager;
 
 import android.annotation.SuppressLint;
 import android.content.BroadcastReceiver;
@@ -20,14 +21,19 @@ import android.widget.Toast;
 public class TrackerActivity extends AppCompatActivity {
 
     // move this to android values
-    private final String startTrackingMsg = "start_tracking";
-    private final String stopTrackingMsg = "stop_tracking";
+    private final String START_TRACKING_MESSAGE = "start_tracking";
+    private final String STOP_TRACKING_MESSAGE = "stop_tracking";
+    private final String SMS_BR_INTENT_ACTION = "android.provider.Telephony.SMS_RECEIVED";
+    private final String NEW_POSTION_MESSAGE_SUFFIX = "newPos";
+    private final String PDUS = "newPos";
+
 
     private EditText etPhoneNumber;
     private Button buttonSend;
     private String trackedPhoneNumber;
 
     private BroadcastReceiver smsReceiver;
+    private TrackerMapsFragment trackerMapsFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,24 +44,30 @@ public class TrackerActivity extends AppCompatActivity {
         this.buttonSend.setOnClickListener((View v) -> this.updateTrackingState());
         this.updateButtonText();
 
+        FragmentManager fragmentManager = this.getSupportFragmentManager();
+        this.trackerMapsFragment = (TrackerMapsFragment) fragmentManager.findFragmentById(R.id.fragment_map);
+
         smsReceiver = new BroadcastReceiver() {
             @Override
             @SuppressLint("NewApi")
             public void onReceive(Context context, Intent intent) {
                 Bundle bundle = intent.getExtras();
-                Object[] pdus = (Object[]) bundle.get("pdus");
+                byte[][] pdus = (byte[][]) bundle.get(PDUS);
                 if (pdus != null) {
-                    for (Object pdu : pdus) {
-                        SmsMessage smsMessage = SmsMessage.createFromPdu((byte[]) pdu, bundle.getString("format"));
-                        Toast.makeText(context, smsMessage.getOriginatingAddress(), Toast.LENGTH_LONG).show();
-                        /*if (smsMessage.getOriginatingAddress().matches(trackedPhoneNumber)) {
+                    for (byte[] pdu : pdus) {
+                        SmsMessage smsMessage = SmsMessage.createFromPdu(pdu, bundle.getString("format"));
+                        if (trackedPhoneNumber != null && smsMessage.getOriginatingAddress().endsWith(trackedPhoneNumber)) {
+                            String[] messageData = smsMessage.getMessageBody().split(";");
+                            if (messageData.length == 4 && messageData[0].equals(NEW_POSTION_MESSAGE_SUFFIX)) {
+                                trackerMapsFragment.updateCurrentPosition(Double.parseDouble(messageData[1]), Double.parseDouble(messageData[2]));
+                            }
                             Toast.makeText(context, smsMessage.getMessageBody(), Toast.LENGTH_LONG).show();
-                        }*/
+                        }
                     }
                 }
             }
         };
-        registerReceiver(smsReceiver, new IntentFilter("android.provider.Telephony.SMS_RECEIVED"));
+        registerReceiver(smsReceiver, new IntentFilter(SMS_BR_INTENT_ACTION));
     }
 
     @Override
@@ -101,14 +113,14 @@ public class TrackerActivity extends AppCompatActivity {
         String phoneNumber = this.etPhoneNumber.getText().toString();
         if (!phoneNumber.equals("")) {
             this.trackedPhoneNumber = phoneNumber;
-            this.sendSMS(phoneNumber, this.startTrackingMsg);
+            this.sendSMS(phoneNumber, this.START_TRACKING_MESSAGE);
         }
     }
 
     private void askStopTracking() {
         String lastPhoneNumber = this.trackedPhoneNumber;
         this.trackedPhoneNumber = null;
-        this.sendSMS(lastPhoneNumber, this.stopTrackingMsg);
+        this.sendSMS(lastPhoneNumber, this.STOP_TRACKING_MESSAGE);
     }
 
     private void updateButtonText() {
