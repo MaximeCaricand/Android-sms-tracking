@@ -18,6 +18,8 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import java.util.Date;
+
 public class TrackerActivity extends AppCompatActivity {
 
     // move this to android values
@@ -25,8 +27,7 @@ public class TrackerActivity extends AppCompatActivity {
     private final String STOP_TRACKING_MESSAGE = "stop_tracking";
     private final String SMS_BR_INTENT_ACTION = "android.provider.Telephony.SMS_RECEIVED";
     private final String NEW_POSTION_MESSAGE_SUFFIX = "newPos";
-    private final String PDUS = "newPos";
-
+    private final String PDUS = "pdus";
 
     private EditText etPhoneNumber;
     private Button buttonSend;
@@ -60,6 +61,8 @@ public class TrackerActivity extends AppCompatActivity {
                             String[] messageData = smsMessage.getMessageBody().split(";");
                             if (messageData.length == 4 && messageData[0].equals(NEW_POSTION_MESSAGE_SUFFIX)) {
                                 trackerMapsFragment.updateCurrentPosition(Double.parseDouble(messageData[1]), Double.parseDouble(messageData[2]));
+                                //Date date = new Date(Long.parseLong(messageData[3]));
+                                //
                             }
                             Toast.makeText(context, smsMessage.getMessageBody(), Toast.LENGTH_LONG).show();
                         }
@@ -67,7 +70,12 @@ public class TrackerActivity extends AppCompatActivity {
                 }
             }
         };
+    }
+
+    @Override
+    protected void onResume() {
         registerReceiver(smsReceiver, new IntentFilter(SMS_BR_INTENT_ACTION));
+        super.onResume();
     }
 
     @Override
@@ -78,10 +86,10 @@ public class TrackerActivity extends AppCompatActivity {
 
     @Override
     protected void onDestroy() {
-        super.onDestroy();
         if(this.trackingON()) {
             this.askStopTracking();
         }
+        super.onDestroy();
     }
 
     protected void openHistory(View v) {
