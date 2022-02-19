@@ -27,7 +27,9 @@ import android.util.Log;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.gms.location.LocationResult;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+//import com.google.android.gms.location.LocationResult;
 
 public class PedometerActivity extends AppCompatActivity implements SensorEventListener {
 
@@ -48,6 +50,7 @@ public class PedometerActivity extends AppCompatActivity implements SensorEventL
     private boolean isFollowed;
 
     //Variables pour gérer la réception et l'envoi de sms
+    private final SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm");
     private final String START_TRACKING_MESSAGE = "start_tracking";
     private final String STOP_TRACKING_MESSAGE = "stop_tracking";
     private final String SMS_BR_INTENT_ACTION = "android.provider.Telephony.SMS_RECEIVED";
@@ -60,9 +63,15 @@ public class PedometerActivity extends AppCompatActivity implements SensorEventL
         public void onLocationChanged(Location location) {
             lm.removeUpdates(this);
         }
-        public void onProviderDisabled(String provider) {}
-        public void onProviderEnabled(String provider) {}
-        public void onStatusChanged(String provider, int status, Bundle extras) {}
+
+        public void onProviderDisabled(String provider) {
+        }
+
+        public void onProviderEnabled(String provider) {
+        }
+
+        public void onStatusChanged(String provider, int status, Bundle extras) {
+        }
     };
 
     @Override
@@ -96,6 +105,7 @@ public class PedometerActivity extends AppCompatActivity implements SensorEventL
                                         trackerPhoneNumber = smsMessage.getOriginatingAddress();
                                         isFollowed = true;
                                         Toast.makeText(context, "ACCEPT", Toast.LENGTH_SHORT).show();
+                                        sendPositionToFollower();
                                         dialog.dismiss();
                                     })
                                     .setNegativeButton("Disagree", (dialog, which) -> dialog.dismiss())
@@ -146,7 +156,8 @@ public class PedometerActivity extends AppCompatActivity implements SensorEventL
         //start handler as activity become visible
         handler.postDelayed(runnable = new Runnable() {
             public void run() {
-                sendPositionToFollower();
+                if (isFollowed)
+                    sendPositionToFollower();
 
                 handler.postDelayed(runnable, delay);
             }
@@ -165,22 +176,35 @@ public class PedometerActivity extends AppCompatActivity implements SensorEventL
     private void sendPositionToFollower() {
         try {
             String messPosition = "";
-            messPosition += NEW_POSTION_MESSAGE_SUFFIX;
+            messPosition += NEW_POSTION_MESSAGE_SUFFIX+";";
 
             lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                // TODO: Consider calling
+                //    ActivityCompat#requestPermissions
+                // here to request the missing permissions, and then overriding
+                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                //                                          int[] grantResults)
+                // to handle the case where the user grants the permission. See the documentation
+                // for ActivityCompat#requestPermissions for more details.
+                return;
+            }
+
+            String coordonnees = String.format("%f;%f;\n", 0., 0.);
+
             lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListenerGps);
             if (lm != null) {
                 Location location = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
                 if (location != null) {
-                    String coordonnees = String.format("Latitude : %f - Longitude : %f\n", location.getLatitude(), location.getLongitude());
-
-                    Toast.makeText(getApplicationContext(), coordonnees, Toast.LENGTH_LONG).show();
+                    coordonnees = String.format("%f;%f;\n", location.getLatitude(), location.getLongitude());
                 }
             }
 
+            messPosition += coordonnees + formatter.format((new Date()));
+
             SmsManager smsManager = SmsManager.getDefault();
             smsManager.sendTextMessage(trackerPhoneNumber, null, messPosition, null, null);
-            Toast.makeText(getApplicationContext(), "SMS envoyé à " + trackerPhoneNumber, Toast.LENGTH_LONG).show();
+            Toast.makeText(getApplicationContext(), "SMS envoyé à " + trackerPhoneNumber + " -> " + messPosition, Toast.LENGTH_LONG).show();
         } catch (Exception ex) {
             Toast.makeText(getApplicationContext(), "Erreur d'envoi de SMS" + ex.getMessage(), Toast.LENGTH_LONG).show();
             ex.printStackTrace();
