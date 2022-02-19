@@ -71,7 +71,7 @@ public class DBHelper extends SQLiteOpenHelper {
 
     //Fonction pour la table Stalker
     //Ajout d'un élément dans la table
-    public long addWalker(Stalker stalker){
+    public long addStalker(Stalker stalker){
         long insertId = -1;
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
@@ -104,7 +104,7 @@ public class DBHelper extends SQLiteOpenHelper {
         return insertId;
     }
     //recuperer tous les exams
-    public ArrayList<Walker> getVictim() {
+    public ArrayList<Walker> getWalker() {
         SQLiteDatabase db = this.getReadableDatabase();
 
         Cursor cursor = db.query(WALKER_TABLE,
