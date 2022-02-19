@@ -45,6 +45,11 @@ public class MainActivity extends AppCompatActivity {
         startActivity(settingsIntent);
     }
 
+    public void openHistory(View v) {
+        Intent positionHistoryIntent = new Intent(this, PositionHistory.class);
+        startActivity(positionHistoryIntent);
+    }
+
     public void clearDB(View view) {
         this.dbHandler.clearTable();
     }

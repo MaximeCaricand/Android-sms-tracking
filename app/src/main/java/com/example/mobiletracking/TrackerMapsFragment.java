@@ -43,8 +43,8 @@ public class TrackerMapsFragment extends SupportMapFragment implements OnMapRead
     @Override
     public void onMapReady(final GoogleMap gmap) { this.googleMap = gmap; }
 
-    public void updateCurrentPosition(Double latitude, Double longitude) {
-        LatLng newPos = new LatLng(latitude, longitude);
+    public void updateCurrentPosition(LatLng position) {
+        LatLng newPos = new LatLng(position.latitude, position.longitude);
         positions.add(newPos);
         googleMap.clear();
 

@@ -14,6 +14,7 @@ import android.telephony.SmsMessage;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.Date;
@@ -23,18 +24,24 @@ public class TrackerActivity extends AppCompatActivity {
     private EditText etPhoneNumber;
     private Button buttonSend;
     private String trackedPhoneNumber;
+    private TextView lastUpdateTV;
 
     private BroadcastReceiver smsReceiver;
     private TrackerMapsFragment trackerMapsFragment;
+
+    private DBHelper dbHelper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_tracker);
+        this.lastUpdateTV = this.findViewById(R.id.lastUpdate);
         this.etPhoneNumber = this.findViewById(R.id.editText_phoneNumber);
         this.buttonSend = this.findViewById(R.id.button_send);
         this.buttonSend.setOnClickListener((View v) -> this.updateTrackingState());
         this.updateButtonText();
+
+        this.dbHelper = new DBHelper(getApplicationContext());
 
         FragmentManager fragmentManager = this.getSupportFragmentManager();
         this.trackerMapsFragment = (TrackerMapsFragment) fragmentManager.findFragmentById(R.id.fragment_map);
@@ -51,12 +58,16 @@ public class TrackerActivity extends AppCompatActivity {
                         if (trackedPhoneNumber != null && smsMessage.getOriginatingAddress().endsWith(trackedPhoneNumber)) {
                             String[] messageData = smsMessage.getMessageBody().split(";");
                             if (messageData.length == 4 && messageData[0].equals(getString(R.string.NEW_POSTION_MESSAGE_SUFFIX))) {
-                                //Position newPos
-                                trackerMapsFragment.updateCurrentPosition(Double.parseDouble(messageData[1]), Double.parseDouble(messageData[2]));
-                                //Date date = new Date(Long.parseLong(messageData[3]));
-                                //
+                                Position newPos = new Position(
+                                        trackedPhoneNumber,
+                                        Double.parseDouble(messageData[1]),
+                                        Double.parseDouble(messageData[2]),
+                                        Long.parseLong(messageData[3])
+                                );
+                                trackerMapsFragment.updateCurrentPosition(newPos.getLatLng());
+                                lastUpdateTV.setText("(Last update: " + newPos.getHourFormat() + ")");
+                                dbHelper.addPosition(newPos);
                             }
-                            Toast.makeText(context, smsMessage.getMessageBody(), Toast.LENGTH_LONG).show();
                         }
                     }
                 }
@@ -85,10 +96,6 @@ public class TrackerActivity extends AppCompatActivity {
         super.onDestroy();
     }
 
-    protected void openHistory(View v) {
-
-    }
-
     public void onSaveInstanceState(Bundle bundle) {
         super.onSaveInstanceState(bundle);
         bundle.putString("trackedPhoneNumber", this.trackedPhoneNumber);
@@ -98,6 +105,10 @@ public class TrackerActivity extends AppCompatActivity {
         this.trackedPhoneNumber = bundle.getString("trackedPhoneNumber");
         this.etPhoneNumber.setText(this.trackedPhoneNumber);
         this.updateButtonText();
+    }
+
+    public void quit(View view) {
+        this.finish();
     }
 
     private boolean trackingON() {

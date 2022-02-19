@@ -95,7 +95,7 @@ public class DBHelper extends SQLiteOpenHelper {
 
         Cursor cursor = db.query(POSITION_TABLE,
                 new String[] {POSITION_PHONE_NUMBER, POSITION_LAT, POSITION_LONG, POSITION_DATE},
-                null, null, null, null, null, null);
+                null, null, null, null, POSITION_DATE + " desc", null);
 
         ArrayList<Position> p = new ArrayList<>();
         if (cursor != null && cursor.getCount() > 0) {

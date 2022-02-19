@@ -15,24 +15,45 @@
         android:text="@string/mainActivityTitle"
         android:textSize="25dp"/>
 
-    <Button
-        android:layout_marginTop="50dp"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:onClick="openPedometer"
-        android:text="@string/pedometer" />
+        android:layout_weight="2"
+        android:orientation="vertical">
+
+        <Button
+            android:layout_marginTop="50dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:onClick="openPedometer"
+            android:text="@string/pedometer" />
+
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:onClick="openTracker"
+            android:text="@string/pedometerHistory" />
+
+        <Button
+            android:layout_marginTop="40dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:onClick="openTracker"
+            android:text="@string/tracker" />
+
+        <Button
+            android:layout_gravity="center"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:onClick="openHistory"
+            android:text="@string/displayHistory" />
+
+    </LinearLayout>
 
     <Button
-        android:layout_marginTop="10dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:onClick="openTracker"
-        android:text="@string/tracker" />
-
-    <Button
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="50dp"
+        android:layout_marginBottom="10dp"
         android:onClick="clearDB"
         android:text="@string/clear"
         android:textFontWeight="100" />

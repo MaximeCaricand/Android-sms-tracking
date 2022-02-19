@@ -2,6 +2,10 @@ package com.example.mobiletracking;
 
 import com.google.android.gms.maps.model.LatLng;
 
+import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 public class Position {
 
     private String phoneNumber;
@@ -16,17 +20,20 @@ public class Position {
         this.date = date;
     }
 
-    public Position(String phoneNumber, LatLng position, long date) {
-        this(phoneNumber, position.latitude, position.longitude, date);
-    }
-
     public String getPhoneNumber() { return phoneNumber; }
     public double getLat() { return lat; }
     public double getLng() { return lng; }
     public long getDate() { return date; }
 
     public LatLng getLatLng() { return new LatLng(this.lat, this.lng); }
-    public String getFormatedDate() {
-        return "";
+
+    public String getHourFormat() {
+        SimpleDateFormat formater = new SimpleDateFormat("HH:mm:ss");
+        return formater.format(new Date(this.date));
+    }
+
+    public String getFullDateFormat() {
+        SimpleDateFormat formater = new SimpleDateFormat("dd MMM yyyy HH:mm:ss");
+        return formater.format(new Date(this.date));
     }
 }
