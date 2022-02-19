@@ -49,17 +49,14 @@
         android:layout_marginRight="16dp"
         android:orientation="vertical">
 
-        <TextView
+
+        <fragment
+            android:id="@+id/fragment_map"
+            android:name="com.example.mobiletracking.TrackerMapsFragment"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:layout_marginLeft="16dp"
-            android:layout_marginTop="15dp"
-            android:layout_marginEnd="16dp"
-            android:layout_marginRight="16dp"
-            android:textAlignment="center"
-            android:textSize="20dp"
-            android:text="Parcours" />
+            android:layout_height="match_parent"
+            android:layout_weight="2"
+            android:layout_marginTop="8dp" />
 
         <TextView
             android:id="@+id/lastUpdate"
@@ -73,19 +70,10 @@
             android:textSize="14dp"
             android:text="(dernière m-à-j : )" />
 
-        <fragment
-            android:id="@+id/fragment_map"
-            android:name="com.example.mobiletracking.TrackerMapsFragment"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_weight="2"
-            android:layout_marginTop="8dp" />
-
         <Button
             android:layout_gravity="center"
             android:layout_width="250dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
             android:onClick="openHistory"
             android:text="Afficher l'historique" />
 

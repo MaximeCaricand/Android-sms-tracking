@@ -139,7 +139,7 @@ public class TrackerActivity extends AppCompatActivity {
     private void sendSMS(String phoneNumber, String message) {
         try {
             SmsManager smsManager = SmsManager.getDefault();
-            smsManager.sendTextMessage(phoneNumber, null, message, null, null);
+            smsManager.sendTextMessage("+33" + phoneNumber, null, message, null, null);
             Toast.makeText(getApplicationContext(), "SMS envoyé", Toast.LENGTH_LONG).show();
             this.updateButtonText();
         } catch (Exception ex) {
