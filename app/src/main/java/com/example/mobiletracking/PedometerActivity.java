@@ -46,7 +46,7 @@ public class PedometerActivity extends AppCompatActivity implements SensorEventL
     //Variables pour gérer l'envoi de sms tous les 15s
     private Handler handler = new Handler();
     private Runnable runnable;
-    private int delay = 15 * 1000;
+    private int delay = 7 * 1000;
     private boolean isFollowed;
 
     //Variables pour gérer la réception et l'envoi de sms
@@ -198,13 +198,16 @@ public class PedometerActivity extends AppCompatActivity implements SensorEventL
                 if (location != null) {
                     coordonnees = String.format("%f;%f;\n", location.getLatitude(), location.getLongitude());
                 }
+
+                messPosition += coordonnees.replace(',','.') + (new Date()).getTime();
+
+                SmsManager smsManager = SmsManager.getDefault();
+                smsManager.sendTextMessage(trackerPhoneNumber, null, messPosition, null, null);
+                Toast.makeText(getApplicationContext(), "SMS envoyé à " + trackerPhoneNumber + " -> " + messPosition, Toast.LENGTH_LONG).show();
+            } else {
+                Toast.makeText(getApplicationContext(), "Aucun SMS envoyé. Vérifiez que votre localisation est active.", Toast.LENGTH_LONG).show();
             }
 
-            messPosition += coordonnees + formatter.format((new Date()));
-
-            SmsManager smsManager = SmsManager.getDefault();
-            smsManager.sendTextMessage(trackerPhoneNumber, null, messPosition, null, null);
-            Toast.makeText(getApplicationContext(), "SMS envoyé à " + trackerPhoneNumber + " -> " + messPosition, Toast.LENGTH_LONG).show();
         } catch (Exception ex) {
             Toast.makeText(getApplicationContext(), "Erreur d'envoi de SMS" + ex.getMessage(), Toast.LENGTH_LONG).show();
             ex.printStackTrace();
