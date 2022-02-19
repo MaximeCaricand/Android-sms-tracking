@@ -13,20 +13,22 @@ import java.util.ArrayList;
 
 public class DBHelper extends SQLiteOpenHelper {
     // paramètres BDD
-    private static final String DBNAME = "emargementnfc";
+    private static final String DBNAME = "mobileTracking";
     private static final int VER = 1;
 
-    private static final String STALKER_TABLE="stalker";
+    private static final String POSITION_TABLE="position";
     private static final String WALKER_TABLE="walker";
 
-    //Table Stalker
-    private static final String STALKER_ID="id";
-    private static final String STALKER_TEL="tel";
-    private static final String STALKER_LOCALISATION="localisation";
-    private  String createStalker = "CREATE TABLE " + STALKER_TABLE +
-            "(" + STALKER_ID + " INTEGER PRIMARY KEY,"
-                + STALKER_TEL + " TEXT,"
-                + STALKER_LOCALISATION + " TEXT" +
+    //Table position
+    private static final String POSITION_PHONE_NUMBER="phoneNumber";
+    private static final String POSITION_LAT="lat";
+    private static final String POSITION_LONG="long";
+    private static final String POSITION_DATE ="date";
+    private  String createPosition = "CREATE TABLE " + POSITION_TABLE +
+            "(" + POSITION_PHONE_NUMBER + " TEXT,"
+                + POSITION_LAT + " TEXT,"
+                + POSITION_LONG + " TEXT,"
+                + POSITION_DATE + " TEXT" +
             ")";
 
     //Table Walker
@@ -37,7 +39,7 @@ public class DBHelper extends SQLiteOpenHelper {
     private static final String WALKER_DATE="date";
     private static final String WALKER_HOUR="hour";
     private  String createWalker = "CREATE TABLE " + WALKER_TABLE +
-            "(" + WALKER_ID + " INTEGER PRIMARY KEY,"
+            "(" + WALKER_ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
                 + WALKER_NUMBERSTEP + " INTEGER,"
                 + WALKER_CURRENTTIMESPEED + " FLOAT,"
                 + WALKER_DISTTRAVELED + " FLOAT,"
@@ -52,7 +54,7 @@ public class DBHelper extends SQLiteOpenHelper {
     //Fonctions basiques de la base
     @Override
     public void onCreate(SQLiteDatabase db) {
-        db.execSQL(createStalker);
+        db.execSQL(createPosition);
         db.execSQL(createWalker);
     }
 
@@ -64,25 +66,32 @@ public class DBHelper extends SQLiteOpenHelper {
 
     public void clearTable() {
         SQLiteDatabase db = this.getWritableDatabase();
-        db.execSQL("delete from " + STALKER_TABLE + "");
+        db.execSQL("delete from " + POSITION_TABLE + "");
         db.execSQL("delete from " + WALKER_TABLE + "");
         db.close();
     }
 
-    //Fonction pour la table Stalker
+    //Fonction pour la table Position
     //Ajout d'un élément dans la table
-    public long addStalker(Stalker stalker){
+    public long addPosition(Position position){
         long insertId = -1;
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
-        values.put(STALKER_ID, stalker.getId());
-        values.put(STALKER_TEL, stalker.getTel());
-        values.put(STALKER_LOCALISATION, stalker.getLocalisation());
+        values.put(POSITION_PHONE_NUMBER, position.getPhoneNumber());
+        values.put(POSITION_LAT, position.getLat());
+        values.put(POSITION_LONG, position.getLng());
+        values.put(POSITION_DATE, position.getDate());
 
         // Inserting Row
-        insertId = db.insert(STALKER_TABLE, null, values);
+        insertId = db.insert(POSITION_TABLE, null, values);
         db.close(); // Closing database connection
         return insertId;
+    }
+
+    //Fonction pour la table Position
+    //Ajout d'un élément dans la table
+    public ArrayList<Position> getPositions(){
+
     }
 
     //Fonction pour la table Victim
