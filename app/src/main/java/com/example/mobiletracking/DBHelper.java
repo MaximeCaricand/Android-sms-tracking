@@ -90,8 +90,25 @@ public class DBHelper extends SQLiteOpenHelper {
 
     //Fonction pour la table Position
     //Ajout d'un élément dans la table
-    public ArrayList<Position> getPositions(){
+    public ArrayList<Position> getAllPositions() {
+        SQLiteDatabase db = this.getReadableDatabase();
 
+        Cursor cursor = db.query(POSITION_TABLE,
+                new String[] {POSITION_PHONE_NUMBER, POSITION_LAT, POSITION_LONG, POSITION_DATE},
+                null, null, null, null, null, null);
+
+        ArrayList<Position> p = new ArrayList<>();
+        if (cursor != null && cursor.getCount() > 0) {
+            cursor.moveToFirst();
+            while (cursor.isAfterLast() == false) {
+                p.add(new Position(cursor.getString(0), cursor.getFloat(1), cursor.getFloat(2), cursor.getLong(3)));
+                cursor.moveToNext();
+            }
+        }
+
+        cursor.close();
+        db.close();
+        return p;
     }
 
     //Fonction pour la table Victim
@@ -113,7 +130,7 @@ public class DBHelper extends SQLiteOpenHelper {
         return insertId;
     }
     //recuperer tous les exams
-    public ArrayList<Walker> getWalker() {
+    public ArrayList<Walker> getAllWalkers() {
         SQLiteDatabase db = this.getReadableDatabase();
 
         Cursor cursor = db.query(WALKER_TABLE,
