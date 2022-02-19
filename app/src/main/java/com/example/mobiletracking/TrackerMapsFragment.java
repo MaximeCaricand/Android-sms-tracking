@@ -1,12 +1,17 @@
 package com.example.mobiletracking;
 
+import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+
+import androidx.annotation.NonNull;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
 
@@ -15,37 +20,52 @@ import java.util.ArrayList;
 public class TrackerMapsFragment extends SupportMapFragment implements OnMapReadyCallback {
 
     private GoogleMap googleMap;
-    private Marker currentPosition;
-    private ArrayList<LatLng> arCoor;
+    private ArrayList<LatLng> positions;
+    private Bitmap runnerBitmap;
 
     public TrackerMapsFragment()  {
-        arCoor = new ArrayList<LatLng>();
+        positions = new ArrayList();
         getMapAsync(this);
+    }
+
+    @Override
+    public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
+        int runnerImageID = this.getResources().getIdentifier("tracked", "drawable", this.getContext().getPackageName());
+        runnerBitmap = Bitmap.createScaledBitmap(
+                BitmapFactory.decodeResource(getResources(), runnerImageID),
+                80,
+                80,
+                false
+        );
     }
 
     @Override
     public void onMapReady(final GoogleMap gmap) { this.googleMap = gmap; }
 
-    public void updateCurrentPosition(Double latitude, Double longitude){
-        //Pas testé voila voila
+    public void updateCurrentPosition(Double latitude, Double longitude) {
+        LatLng newPos = new LatLng(latitude, longitude);
+        positions.add(newPos);
         googleMap.clear();
-        LatLng pos = new LatLng(latitude, longitude);
-        arCoor.add(pos);
 
-        this.currentPosition.setPosition(pos);
+        // Start point
+        googleMap.addMarker(new MarkerOptions().position(positions.get(0)).title("Début du parcours"));
 
-        googleMap.addMarker(new MarkerOptions()
-                .position(arCoor.get(0))
-                .title("Start"));
+        // Last point
+        if (positions.size() > 1) {
+            googleMap.addMarker(new MarkerOptions()
+                    .position(positions.get(positions.size()-1))
+                    .icon(BitmapDescriptorFactory.fromBitmap(this.runnerBitmap))
+                    .title("Position courante"));
+        }
 
-        googleMap.addMarker(new MarkerOptions()
-                .position(arCoor.get(arCoor.size()-1))
-                .title("End"));
-
+        // Paths
         googleMap.addPolyline(new PolylineOptions()
                 .clickable(true)
-                .addAll(arCoor));
-        this.moveToCurrentLocation(pos);
+                .color(getContext().getResources().getColor(R.color.red))
+                .addAll(positions));
+
+        this.moveToCurrentLocation(newPos);
     }
 
     private void moveToCurrentLocation(LatLng currentLocation) {

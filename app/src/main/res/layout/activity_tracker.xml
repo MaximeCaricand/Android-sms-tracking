@@ -59,7 +59,7 @@
             android:layout_marginRight="16dp"
             android:textAlignment="center"
             android:textSize="20dp"
-            android:text="Dernière position" />
+            android:text="Parcours" />
 
         <TextView
             android:id="@+id/lastUpdate"
