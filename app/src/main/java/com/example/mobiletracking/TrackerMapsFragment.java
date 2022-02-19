@@ -49,14 +49,14 @@ public class TrackerMapsFragment extends SupportMapFragment implements OnMapRead
         googleMap.clear();
 
         // Start point
-        googleMap.addMarker(new MarkerOptions().position(positions.get(0)).title("Début du parcours"));
+        googleMap.addMarker(new MarkerOptions().position(positions.get(0)).title(getString(R.string.startCourse)));
 
         // Last point
         if (positions.size() > 1) {
             googleMap.addMarker(new MarkerOptions()
                     .position(positions.get(positions.size()-1))
                     .icon(BitmapDescriptorFactory.fromBitmap(this.runnerBitmap))
-                    .title("Position courante"));
+                    .title(getString(R.string.currentPosition)));
         }
 
         // Paths
@@ -70,7 +70,9 @@ public class TrackerMapsFragment extends SupportMapFragment implements OnMapRead
 
     private void moveToCurrentLocation(LatLng currentLocation) {
         this.googleMap.moveCamera(CameraUpdateFactory.newLatLng(currentLocation));
-        this.googleMap.animateCamera(CameraUpdateFactory.zoomIn());
-        this.googleMap.animateCamera(CameraUpdateFactory.zoomTo(15), 2000, null);
+        if (positions.size() == 1) { // avoid reset user zoom after first point
+            this.googleMap.animateCamera(CameraUpdateFactory.zoomIn());
+            this.googleMap.animateCamera(CameraUpdateFactory.zoomTo(15), 2000, null);
+        }
     }
 }

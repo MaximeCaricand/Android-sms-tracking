@@ -9,7 +9,7 @@ import android.util.Log;
 import androidx.annotation.Nullable;
 
 public class DBHelper extends SQLiteOpenHelper {
-    //paramètres BDD
+    // paramètres BDD
     private static final String DBNAME = "emargementnfc";
     private static final int VER = 1;
 

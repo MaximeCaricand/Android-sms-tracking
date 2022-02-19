@@ -5,4 +5,22 @@
     <string name="pedometer">Pedometer</string>
     <string name="tracker">Tracker</string>
     <string name="clear">Clear DB</string>
+
+    <!-- Tracker Activity -->
+    <string name="phoneNumber">Phone number</string>
+    <string name="askTracking">Ask for tracking</string>
+    <string name="stopTracking">Stop tracking</string>
+    <string name="lastUpdate">(Last update: ?)</string>
+    <string name="displayHistory">Show positions history</string>
+    <string name="askStopTracking">Request stop tracking</string>
+    <string name="startCourse">Beginning of the course</string>
+    <string name="currentPosition">Current position</string>
+
+    <!-- Shared Constants -->
+    <string name="START_TRACKING_MESSAGE">start_tracking</string>
+    <string name="STOP_TRACKING_MESSAGE">stop_tracking</string>
+    <string name="SMS_BR_INTENT_ACTION">android.provider.Telephony.SMS_RECEIVED</string>
+    <string name="NEW_POSTION_MESSAGE_SUFFIX">newPos</string>
+    <string name="PDUS">pdus</string>
+
 </resources>

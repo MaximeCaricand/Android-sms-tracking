@@ -1,6 +1,5 @@
 package com.example.mobiletracking;
 
-import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.FragmentManager;
 
@@ -9,7 +8,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.os.Build;
 import android.os.Bundle;
 import android.telephony.SmsManager;
 import android.telephony.SmsMessage;
@@ -21,13 +19,6 @@ import android.widget.Toast;
 import java.util.Date;
 
 public class TrackerActivity extends AppCompatActivity {
-
-    // move this to android values
-    private final String START_TRACKING_MESSAGE = "start_tracking";
-    private final String STOP_TRACKING_MESSAGE = "stop_tracking";
-    private final String SMS_BR_INTENT_ACTION = "android.provider.Telephony.SMS_RECEIVED";
-    private final String NEW_POSTION_MESSAGE_SUFFIX = "newPos";
-    private final String PDUS = "pdus";
 
     private EditText etPhoneNumber;
     private Button buttonSend;
@@ -53,13 +44,14 @@ public class TrackerActivity extends AppCompatActivity {
             @SuppressLint("NewApi")
             public void onReceive(Context context, Intent intent) {
                 Bundle bundle = intent.getExtras();
-                byte[][] pdus = (byte[][]) bundle.get(PDUS);
+                byte[][] pdus = (byte[][]) bundle.get(getString(R.string.PDUS));
                 if (pdus != null) {
                     for (byte[] pdu : pdus) {
                         SmsMessage smsMessage = SmsMessage.createFromPdu(pdu, bundle.getString("format"));
                         if (trackedPhoneNumber != null && smsMessage.getOriginatingAddress().endsWith(trackedPhoneNumber)) {
                             String[] messageData = smsMessage.getMessageBody().split(";");
-                            if (messageData.length == 4 && messageData[0].equals(NEW_POSTION_MESSAGE_SUFFIX)) {
+                            if (messageData.length == 4 && messageData[0].equals(getString(R.string.NEW_POSTION_MESSAGE_SUFFIX))) {
+                                //Position newPos
                                 trackerMapsFragment.updateCurrentPosition(Double.parseDouble(messageData[1]), Double.parseDouble(messageData[2]));
                                 //Date date = new Date(Long.parseLong(messageData[3]));
                                 //
@@ -74,7 +66,7 @@ public class TrackerActivity extends AppCompatActivity {
 
     @Override
     protected void onResume() {
-        registerReceiver(smsReceiver, new IntentFilter(SMS_BR_INTENT_ACTION));
+        registerReceiver(smsReceiver, new IntentFilter(getString(R.string.SMS_BR_INTENT_ACTION)));
         super.onResume();
     }
 
@@ -87,6 +79,7 @@ public class TrackerActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         if(this.trackingON()) {
+            Toast.makeText(getApplicationContext(), this.getString(R.string.askStopTracking), Toast.LENGTH_LONG).show();
             this.askStopTracking();
         }
         super.onDestroy();
@@ -121,26 +114,25 @@ public class TrackerActivity extends AppCompatActivity {
         String phoneNumber = this.etPhoneNumber.getText().toString();
         if (!phoneNumber.equals("")) {
             this.trackedPhoneNumber = phoneNumber;
-            this.sendSMS(phoneNumber, this.START_TRACKING_MESSAGE);
+            this.sendSMS(phoneNumber, getString(R.string.START_TRACKING_MESSAGE));
         }
     }
 
     private void askStopTracking() {
         String lastPhoneNumber = this.trackedPhoneNumber;
         this.trackedPhoneNumber = null;
-        this.sendSMS(lastPhoneNumber, this.STOP_TRACKING_MESSAGE);
+        this.sendSMS(lastPhoneNumber, getString(R.string.STOP_TRACKING_MESSAGE));
     }
 
     private void updateButtonText() {
-        if (this.trackingON()) this.buttonSend.setText("Arrêter le suivi");
-        else this.buttonSend.setText("Demander le suivi");
+        if (this.trackingON()) this.buttonSend.setText(this.getString(R.string.stopTracking));
+        else this.buttonSend.setText(this.getString(R.string.askTracking));
     }
 
     private void sendSMS(String phoneNumber, String message) {
         try {
             SmsManager smsManager = SmsManager.getDefault();
             smsManager.sendTextMessage("+33" + phoneNumber, null, message, null, null);
-            Toast.makeText(getApplicationContext(), "SMS envoyé", Toast.LENGTH_LONG).show();
             this.updateButtonText();
         } catch (Exception ex) {
             Toast.makeText(getApplicationContext(), "Erreur d'envoi de SMS" + ex.getMessage(), Toast.LENGTH_LONG).show();
