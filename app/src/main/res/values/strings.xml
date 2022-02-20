@@ -4,10 +4,25 @@
     <string name="mainActivityTitle">!! Awesome TRACKER app !!</string>
     <string name="pedometer">Pedometer</string>
     <string name="pedometerHistory">Pedometer history</string>
-
     <string name="tracker">Tracker</string>
     <string name="trackerHistory">Tracker history</string>
     <string name="clear">Clear DB</string>
+
+
+    <!-- Pedometer Activity -->
+    <string name="alertTitle">Someone want follow you !</string>
+    <string name="messPart1">If you accept, the number </string>
+    <string name="messPart2"> will be able to follow your movements.</string>
+    <string name="startFollow">Accept</string>
+    <string name="disagree">Disagree</string>
+    <string name="agree">Agree</string>
+    <string name="endFollow">You are no longer followed.</string>
+    <string name="errorSMS">Erreur d\'envoi de SMS</string>
+    <string name="errorLocalisation">Aucun SMS envoyé. Vérifiez que votre localisation est active.</string>
+    <string name="sendSMS">SMS envoyé à </string>
+
+    <!-- Pedometer History -->
+    <string name="pedometerHistoryTitle">Pedometer history</string>
 
 
     <!-- Tracker Activity -->
@@ -23,16 +38,16 @@
 
     <!-- Position History -->
     <string name="positionHistoryTitle">Positions history</string>
-    <string name="refresh">Refresh</string>
+
 
     <!-- Shared Constants -->
-    <string name="returnTracker">Return to tracker</string>
+    <string name="returnMenu">Return to menu</string>
 
     <!-- Shared Constants -->
     <string name="START_TRACKING_MESSAGE">start_tracking</string>
     <string name="STOP_TRACKING_MESSAGE">stop_tracking</string>
     <string name="SMS_BR_INTENT_ACTION">android.provider.Telephony.SMS_RECEIVED</string>
-    <string name="NEW_POSTION_MESSAGE_SUFFIX">newPos</string>
+    <string name="NEW_POSITION_MESSAGE_PREFIX">newPos</string>
     <string name="PDUS">pdus</string>
 
 </resources>

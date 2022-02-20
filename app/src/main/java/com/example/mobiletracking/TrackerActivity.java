@@ -57,7 +57,7 @@ public class TrackerActivity extends AppCompatActivity {
                         SmsMessage smsMessage = SmsMessage.createFromPdu(pdu, bundle.getString("format"));
                         if (trackedPhoneNumber != null && smsMessage.getOriginatingAddress().endsWith(trackedPhoneNumber)) {
                             String[] messageData = smsMessage.getMessageBody().split(";");
-                            if (messageData.length == 4 && messageData[0].equals(getString(R.string.NEW_POSTION_MESSAGE_SUFFIX))) {
+                            if (messageData.length == 4 && messageData[0].equals(getString(R.string.NEW_POSITION_MESSAGE_PREFIX))) {
                                 Position newPos = new Position(
                                         trackedPhoneNumber,
                                         Double.parseDouble(messageData[1]),

@@ -14,7 +14,7 @@ import java.util.ArrayList;
 public class DBHelper extends SQLiteOpenHelper {
     // paramètres BDD
     private static final String DBNAME = "mobileTracking";
-    private static final int VER = 1;
+    private static final int VER = 3;
 
     private static final String POSITION_TABLE="position";
     private static final String WALKER_TABLE="walker";
@@ -37,14 +37,12 @@ public class DBHelper extends SQLiteOpenHelper {
     private static final String WALKER_CURRENTTIMESPEED="currentTimeSpeed";
     private static final String WALKER_DISTTRAVELED="distTraveled";
     private static final String WALKER_DATE="date";
-    private static final String WALKER_HOUR="hour";
     private  String createWalker = "CREATE TABLE " + WALKER_TABLE +
             "(" + WALKER_ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
                 + WALKER_NUMBERSTEP + " INTEGER,"
                 + WALKER_CURRENTTIMESPEED + " FLOAT,"
                 + WALKER_DISTTRAVELED + " FLOAT,"
-                + WALKER_DATE + " TEXT,"
-                + WALKER_HOUR + " TEXT" +
+                + WALKER_DATE + " TEXT" +
             ")";
 
     public DBHelper(@Nullable Context context) {
@@ -54,21 +52,29 @@ public class DBHelper extends SQLiteOpenHelper {
     //Fonctions basiques de la base
     @Override
     public void onCreate(SQLiteDatabase db) {
-        db.execSQL(createPosition);
-        db.execSQL(createWalker);
+        createTable(db);
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         Log.d("DatabaseHandler", "upgrading database");
-        clearTable();
+        dropTable(db);
+        createTable(db);
     }
 
     public void clearTable() {
         SQLiteDatabase db = this.getWritableDatabase();
-        db.execSQL("delete from " + POSITION_TABLE + "");
-        db.execSQL("delete from " + WALKER_TABLE + "");
+        dropTable(db);
+        createTable(db);
         db.close();
+    }
+    private void createTable(SQLiteDatabase db) {
+        db.execSQL(createPosition);
+        db.execSQL(createWalker);
+    }
+    private void dropTable(SQLiteDatabase db) {
+        db.execSQL("DROP TABLE IF EXISTS " + POSITION_TABLE + "");
+        db.execSQL("DROP TABLE IF EXISTS " + WALKER_TABLE + "");
     }
 
     //Fonction pour la table Position
@@ -118,11 +124,10 @@ public class DBHelper extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getWritableDatabase();
 
         ContentValues values = new ContentValues();
-        values.put(WALKER_NUMBERSTEP, walker.getNbPas());
-        values.put(WALKER_CURRENTTIMESPEED, walker.getAvgSpeed());
-        values.put(WALKER_DISTTRAVELED, walker.getDistParcouru());
+        values.put(WALKER_NUMBERSTEP, walker.getNumberStep());
+        values.put(WALKER_CURRENTTIMESPEED, walker.getCurrentTimeSpeed());
+        values.put(WALKER_DISTTRAVELED, walker.getDistTraveled());
         values.put(WALKER_DATE, walker.getDate());
-        values.put(WALKER_HOUR, walker.getHeure());
 
         // Inserting Row
         insertId = db.insert(WALKER_TABLE, null, values);
@@ -134,14 +139,14 @@ public class DBHelper extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getReadableDatabase();
 
         Cursor cursor = db.query(WALKER_TABLE,
-                new String[] {WALKER_NUMBERSTEP, WALKER_CURRENTTIMESPEED, WALKER_DISTTRAVELED, WALKER_DATE, WALKER_HOUR},
-                null, null, null, null, null, null);
+                new String[] {WALKER_NUMBERSTEP, WALKER_CURRENTTIMESPEED, WALKER_DISTTRAVELED, WALKER_DATE},
+                null, null, null, null, WALKER_DATE + " DESC", null);
 
         ArrayList<Walker> w = new ArrayList<>();
         if (cursor != null && cursor.getCount() > 0) {
             cursor.moveToFirst();
             while (cursor.isAfterLast() == false) {
-                w.add(new Walker(cursor.getInt(0), cursor.getFloat(1), cursor.getFloat(2), cursor.getString(3), cursor.getString(4)));
+                w.add(new Walker(cursor.getInt(0), cursor.getFloat(1), cursor.getFloat(2), cursor.getLong(3)));
                 cursor.moveToNext();
             }
         }

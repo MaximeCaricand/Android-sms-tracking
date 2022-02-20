@@ -21,9 +21,6 @@
         android:roundIcon="@drawable/runner_icon"
         android:supportsRtl="true"
         android:theme="@style/Theme.MobileTracking">
-        <activity
-            android:name=".PositionHistory"
-            android:exported="false" />
 
         <meta-data
             android:name="com.google.android.geo.API_KEY"
@@ -43,8 +40,14 @@
             android:name=".PedometerActivity"
             android:screenOrientation="portrait" />
         <activity
+            android:name=".PedometerHistoryActivity"
+            android:exported="false" />
+        <activity
             android:name=".TrackerActivity"
             android:screenOrientation="portrait" />
+        <activity
+            android:name=".PositionHistory"
+            android:exported="false" />
     </application>
 
 </manifest>

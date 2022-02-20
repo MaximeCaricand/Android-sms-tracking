@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="horizontal"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginStart="5dp"
+        android:layout_marginTop="5dp">
+
+        <TextView
+            android:id="@+id/tv_date_hour"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="5dp"
+            android:text="dd/mm/yyyy hh:mm:ss"
+            android:textSize="15dp"/>
+
+        <TextView
+            android:id="@+id/tv_number_step"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/tv_date_hour"
+            android:text="50 PAS"
+            android:textSize="15dp" />
+
+        <TextView
+            android:id="@+id/tv_current_time_speed"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:text="12 mètres/s"
+            android:textAlignment="textEnd"
+            android:textSize="15dp" />
+
+        <TextView
+            android:id="@+id/tv_dist_traveled"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/tv_current_time_speed"
+            android:layout_alignParentRight="true"
+            android:layout_marginTop="2dp"
+            android:text="420 mètres"
+            android:textAlignment="textEnd"
+            android:textSize="15dp" />
+
+    </RelativeLayout>
+
+</LinearLayout>

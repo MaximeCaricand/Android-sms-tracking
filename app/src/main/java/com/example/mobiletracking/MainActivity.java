@@ -15,7 +15,7 @@ import java.util.Arrays;
 
 public class MainActivity extends AppCompatActivity {
 
-    DBHelper dbHandler;
+    DBHelper dbHelper;
     private static final int PERMISSION_REQUEST_CODE = 2;
     private static final String[] PERMISSION_LIST = {
             Manifest.permission.SEND_SMS,
@@ -31,7 +31,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        this.dbHandler = new DBHelper(getApplicationContext());
+        this.dbHelper = new DBHelper(getApplicationContext());
         this.HandlePermissions();
     }
 
@@ -40,18 +40,23 @@ public class MainActivity extends AppCompatActivity {
         startActivity(settingsIntent);
     }
 
+    public void openPedometerHistory(View v) {
+        Intent pedometerHistoryIntent = new Intent(this, PedometerHistoryActivity.class);
+        startActivity(pedometerHistoryIntent);
+    }
+
     public void openTracker(View view) {
         Intent settingsIntent = new Intent(this, TrackerActivity.class);
         startActivity(settingsIntent);
     }
 
-    public void openHistory(View v) {
+    public void openTrackerHistory(View v) {
         Intent positionHistoryIntent = new Intent(this, PositionHistory.class);
         startActivity(positionHistoryIntent);
     }
 
     public void clearDB(View view) {
-        this.dbHandler.clearTable();
+        this.dbHelper.clearTable();
     }
 
     @SuppressLint("NewApi")

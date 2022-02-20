@@ -17,7 +17,7 @@ import java.util.List;
 public class PositionHistory extends AppCompatActivity {
 
     private DBHelper dbHelper;
-    ListView examSessionListView;
+    ListView positionListView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,8 +30,8 @@ public class PositionHistory extends AppCompatActivity {
 
     public void updateListView() {
         List<Position> phList = this.dbHelper.getAllPositions();
-        this.examSessionListView = findViewById(R.id.position_history_listview);
-        this.examSessionListView.setAdapter(new PositionHistoryItemAdaptater(this, phList));
+        positionListView = findViewById(R.id.position_history_listview);
+        positionListView.setAdapter(new PositionHistoryItemAdaptater(this, phList));
     }
 
     public void quit(View view) {

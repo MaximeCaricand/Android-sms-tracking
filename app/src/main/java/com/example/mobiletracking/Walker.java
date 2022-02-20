@@ -1,23 +1,27 @@
 package com.example.mobiletracking;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 public class Walker {
     private int numberStep;
     private float currentTimeSpeed;
     private float distTraveled;
-    private String date;
-    private String hour;
+    private long date;
 
-    Walker(int numberStep, float currentTimeSpeed, float distTraveled, String date, String hour){
+    Walker(int numberStep, float currentTimeSpeed, float distTraveled, long date){
         this.numberStep = numberStep;
         this.currentTimeSpeed = currentTimeSpeed;
         this.distTraveled = distTraveled;
         this.date = date;
-        this.hour = hour;
     }
 
-    public int getNbPas() { return this.numberStep; }
-    public float getAvgSpeed() { return this.currentTimeSpeed; }
-    public float getDistParcouru() { return this.distTraveled; }
-    public String getDate() { return this.date; }
-    public String getHeure() { return this.hour; }
+    public int getNumberStep() { return this.numberStep; }
+    public float getCurrentTimeSpeed() { return this.currentTimeSpeed; }
+    public float getDistTraveled() { return this.distTraveled; }
+    public long getDate() { return date; }
+    public String getDateFormat() {
+        SimpleDateFormat formater = new SimpleDateFormat("dd MMM yyyy HH:mm:ss");
+        return formater.format(new Date(date));
+    }
 }

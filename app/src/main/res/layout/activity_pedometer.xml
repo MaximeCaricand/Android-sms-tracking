@@ -23,4 +23,13 @@
         android:layout_marginTop="50px"
         android:text="0 PAS" />
 
+    <Button
+        android:id="@+id/btn_addWalker"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAlignment="center"
+        android:textSize="42dp"
+        android:text="ADD WALKER"
+        android:onClick="saveDataWalker"/>
+
 </LinearLayout>
