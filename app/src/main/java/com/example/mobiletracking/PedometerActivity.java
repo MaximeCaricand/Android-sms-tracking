@@ -29,7 +29,10 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.Timer;
+import java.util.TimerTask;
 //import com.google.android.gms.location.LocationResult;
 
 public class PedometerActivity extends AppCompatActivity implements SensorEventListener {
@@ -48,6 +51,7 @@ public class PedometerActivity extends AppCompatActivity implements SensorEventL
     private SensorManager sensorManager;
 
     private Sensor pedometer;
+    private Location location;
 
     //Variables pour gérer l'envoi de sms tous les 15s
     private Handler handler = new Handler();
@@ -126,13 +130,53 @@ public class PedometerActivity extends AppCompatActivity implements SensorEventL
             }
         };
         registerReceiver(smsReceiver, new IntentFilter(getString(R.string.SMS_BR_INTENT_ACTION)));
+        new Timer().scheduleAtFixedRate(new TimerTask() {
+            @Override
+            public void run() {
+                now = new Date();
+
+                float tmpSpeed = 0;
+                if(location != null) {
+                    currentTimeSpeed = location.getSpeed();
+                    tmpSpeed = currentTimeSpeed;
+                }
+                Walker walker = new Walker(numberStep, tmpSpeed, distTraveled, now.getTime());
+                dbHelper.addWalker(walker);
+            }
+        }, 1000, 1000);
+    }
+
+    private float getTotalDistance() {
+        ArrayList<Position> positions = dbHelper.getAllPositions();
+        float totalDistance = 0;
+        if(positions.size() < 2)
+            return totalDistance;
+        Position lastP = positions.get(0);
+        for(int i=1; i<positions.size(); i++) {
+            Position newP = positions.get(i);
+            totalDistance += calcDistance(lastP, newP);
+            lastP = newP;
+        }
+        return totalDistance;
+    }
+
+    private float calcDistance(Position p1, Position p2) {
+        double R = 6371e3; // metres
+        double lat1 = p1.getLat() * Math.PI/180; // φ, λ in radians
+        double lat2 = p1.getLat() * Math.PI/180;
+        double deltalat = (p2.getLat()-p1.getLat()) * Math.PI/180;
+        double deltaLng = (p2.getLng()-p1.getLng()) * Math.PI/180;
+
+        double a = Math.sin(deltalat/2) * Math.sin(deltalat/2) +
+                    Math.cos(lat1) * Math.cos(lat2) *
+                        Math.sin(deltaLng/2) * Math.sin(deltaLng/2);
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+
+        return (float)(R * c); // in metres
     }
 
     private void updateTextView() {
-        int tmp = currentCounter - startCounter;
-        if (tmp < 0)
-            tmp = 0;
-        String msg = tmp + " PAS";
+        String msg = this.numberStep + " PAS";
         tvPedometer.setText(msg);
     }
 
@@ -152,6 +196,10 @@ public class PedometerActivity extends AppCompatActivity implements SensorEventL
             if (startCounter == -1)
                 startCounter = (int) values[0];
             currentCounter = (int) values[0];
+
+            this.numberStep = currentCounter - startCounter;
+            if(this.numberStep < 0)
+                this.numberStep = 0;
             updateTextView();
         }
     }
@@ -209,7 +257,7 @@ public class PedometerActivity extends AppCompatActivity implements SensorEventL
 
             lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListenerGps);
             if (lm != null) {
-                Location location = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+                this.location = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
                 if (location != null) {
                     coordonnees = String.format("%f;%f;\n", location.getLatitude(), location.getLongitude());
                 }

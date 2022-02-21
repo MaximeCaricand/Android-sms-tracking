@@ -12,6 +12,7 @@ import android.view.View;
 import android.widget.Toast;
 
 import java.util.Arrays;
+import java.util.Date;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -32,6 +33,11 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         this.dbHelper = new DBHelper(getApplicationContext());
+
+        Date now = new Date();
+        Walker walker = new Walker(-1, -1, -1, now.getTime());
+        dbHelper.addWalker(walker);
+
         this.HandlePermissions();
     }
 

@@ -23,13 +23,31 @@
         android:layout_marginTop="50px"
         android:text="0 PAS" />
 
-    <Button
-        android:id="@+id/btn_addWalker"
+    <TextView
+        android:id="@+id/tv_curr_speed"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textAlignment="center"
-        android:textSize="42dp"
-        android:text="ADD WALKER"
-        android:onClick="saveDataWalker"/>
+        android:textSize="30dp"
+        android:layout_marginTop="50px"
+        android:text="actuel : 0 m/s" />
+
+    <TextView
+        android:id="@+id/tv_avg_speed"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAlignment="center"
+        android:textSize="30dp"
+        android:layout_marginTop="50px"
+        android:text="moyenne : 0 m/s" />
+
+    <TextView
+        android:id="@+id/tv_distance"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAlignment="center"
+        android:textSize="30dp"
+        android:layout_marginTop="50px"
+        android:text="0 m" />
 
 </LinearLayout>
