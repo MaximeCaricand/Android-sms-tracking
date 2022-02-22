@@ -46,8 +46,12 @@ public class PedometerActivity extends AppCompatActivity implements SensorEventL
     private int numberStep;
     private float currentTimeSpeed;
     private float distTraveled;
+    private float avgTimeSpeed;
 
     private TextView tvPedometer;
+    private TextView tvCurrSpeed;
+    private TextView tvAvgSpeed;
+    private TextView tvDistance;
     private SensorManager sensorManager;
 
     private Sensor pedometer;
@@ -87,6 +91,9 @@ public class PedometerActivity extends AppCompatActivity implements SensorEventL
         dbHelper = new DBHelper(getApplicationContext());
 
         tvPedometer = findViewById(R.id.tv_pedometer);
+        tvCurrSpeed = findViewById(R.id.tv_curr_speed);
+        tvAvgSpeed  = findViewById(R.id.tv_avg_speed);
+        tvDistance  = findViewById(R.id.tv_distance);
         updateTextView();
 
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
@@ -129,6 +136,7 @@ public class PedometerActivity extends AppCompatActivity implements SensorEventL
             }
             }
         };
+
         registerReceiver(smsReceiver, new IntentFilter(getString(R.string.SMS_BR_INTENT_ACTION)));
         new Timer().scheduleAtFixedRate(new TimerTask() {
             @Override
@@ -142,6 +150,7 @@ public class PedometerActivity extends AppCompatActivity implements SensorEventL
                 }
                 Walker walker = new Walker(numberStep, tmpSpeed, distTraveled, now.getTime());
                 dbHelper.addWalker(walker);
+                updateTextViews();
             }
         }, 1000, 1000);
     }
@@ -161,23 +170,32 @@ public class PedometerActivity extends AppCompatActivity implements SensorEventL
     }
 
     private float calcDistance(Position p1, Position p2) {
-        double R = 6371e3; // metres
-        double lat1 = p1.getLat() * Math.PI/180; // φ, λ in radians
+        double R = 6371e3;
+        double lat1 = p1.getLat() * Math.PI/180;
         double lat2 = p1.getLat() * Math.PI/180;
-        double deltalat = (p2.getLat()-p1.getLat()) * Math.PI/180;
+        double deltaLat = (p2.getLat()-p1.getLat()) * Math.PI/180;
         double deltaLng = (p2.getLng()-p1.getLng()) * Math.PI/180;
 
-        double a = Math.sin(deltalat/2) * Math.sin(deltalat/2) +
+        double a = Math.sin(deltaLat/2) * Math.sin(deltaLat/2) +
                     Math.cos(lat1) * Math.cos(lat2) *
                         Math.sin(deltaLng/2) * Math.sin(deltaLng/2);
         double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
 
-        return (float)(R * c); // in metres
+        return (float)(R * c);
     }
 
     private void updateTextView() {
         String msg = this.numberStep + " PAS";
         tvPedometer.setText(msg);
+    }
+
+    private void updateTextViews() {
+        String msg = "actuel : " + this.currentTimeSpeed + " m/s";
+        this.tvCurrSpeed.setText(msg);
+        msg = "moyenne : " + 5 + " m/s";
+        this.tvAvgSpeed.setText(msg);
+        msg = Math.floor(this.distTraveled) + " m";
+        this.tvDistance.setText(msg);
     }
 
     public void saveDataWalker(View view) {

@@ -30,7 +30,7 @@
         android:textAlignment="center"
         android:textSize="30dp"
         android:layout_marginTop="50px"
-        android:text="actuel : 0 m/s" />
+        android:text="actuel : 0.0 m/s" />
 
     <TextView
         android:id="@+id/tv_avg_speed"
@@ -39,7 +39,7 @@
         android:textAlignment="center"
         android:textSize="30dp"
         android:layout_marginTop="50px"
-        android:text="moyenne : 0 m/s" />
+        android:text="moyenne : 0.0 m/s" />
 
     <TextView
         android:id="@+id/tv_distance"
