@@ -101,12 +101,12 @@ public class DBHelper extends SQLiteOpenHelper {
 
         Cursor cursor = db.query(POSITION_TABLE,
                 new String[] {POSITION_PHONE_NUMBER, POSITION_LAT, POSITION_LONG, POSITION_DATE},
-                null, null, null, null, POSITION_DATE + " desc", null);
+                null, null, null, null, POSITION_DATE + " DESC", null);
 
         ArrayList<Position> p = new ArrayList<>();
         if (cursor != null && cursor.getCount() > 0) {
             cursor.moveToFirst();
-            while (cursor.isAfterLast() == false) {
+            while (!cursor.isAfterLast()) {
                 p.add(new Position(cursor.getString(0), cursor.getFloat(1), cursor.getFloat(2), cursor.getLong(3)));
                 cursor.moveToNext();
             }
@@ -139,13 +139,13 @@ public class DBHelper extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getReadableDatabase();
 
         Cursor cursor = db.query(WALKER_TABLE,
-                new String[] {WALKER_NUMBERSTEP, WALKER_CURRENTTIMESPEED, WALKER_DISTTRAVELED, WALKER_DATE},
+                new String[]{WALKER_NUMBERSTEP, WALKER_CURRENTTIMESPEED, WALKER_DISTTRAVELED, WALKER_DATE},
                 null, null, null, null, WALKER_DATE + " DESC", null);
 
         ArrayList<Walker> w = new ArrayList<>();
         if (cursor != null && cursor.getCount() > 0) {
             cursor.moveToFirst();
-            while (cursor.isAfterLast() == false) {
+            while (!cursor.isAfterLast()) {
                 w.add(new Walker(cursor.getInt(0), cursor.getFloat(1), cursor.getFloat(2), cursor.getLong(3)));
                 cursor.moveToNext();
             }
@@ -154,5 +154,40 @@ public class DBHelper extends SQLiteOpenHelper {
         cursor.close();
         db.close();
         return w;
+    }
+    //recuperer toutes entrées depuis que l'utilisateur à lancé le podomètre
+    public ArrayList<Walker> getAllCurrentWalker() {
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        Cursor cursor = db.query(WALKER_TABLE,
+                new String[] {WALKER_NUMBERSTEP, WALKER_CURRENTTIMESPEED, WALKER_DISTTRAVELED, WALKER_DATE},
+                WALKER_NUMBERSTEP + "=?",
+                new String[] {String.valueOf(-1)}, null, null, WALKER_DATE + " DESC", null);
+
+        Walker w = null;
+        if (cursor != null && cursor.getCount() > 0) {
+            cursor.moveToFirst();
+            if (!cursor.isAfterLast())
+                w = new Walker(cursor.getInt(0), cursor.getFloat(1), cursor.getFloat(2), cursor.getLong(3));
+        }
+
+
+        cursor = db.query(WALKER_TABLE,
+                new String[]{WALKER_NUMBERSTEP, WALKER_CURRENTTIMESPEED, WALKER_DISTTRAVELED, WALKER_DATE},
+                WALKER_DATE + ">?",
+                new String[] {String.valueOf(w.getDate())}, null, null, WALKER_DATE + " DESC", null);
+
+        ArrayList<Walker> alw = new ArrayList<>();
+        if (cursor != null && cursor.getCount() > 0) {
+            cursor.moveToFirst();
+            while (!cursor.isAfterLast()) {
+                alw.add(new Walker(cursor.getInt(0), cursor.getFloat(1), cursor.getFloat(2), cursor.getLong(3)));
+                cursor.moveToNext();
+            }
+        }
+
+        cursor.close();
+        db.close();
+        return alw;
     }
 }

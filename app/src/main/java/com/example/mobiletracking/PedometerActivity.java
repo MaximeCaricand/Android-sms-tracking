@@ -55,7 +55,6 @@ public class PedometerActivity extends AppCompatActivity implements SensorEventL
     private SensorManager sensorManager;
 
     private Sensor pedometer;
-    private Location location;
 
     //Variables pour gérer l'envoi de sms tous les 15s
     private Handler handler = new Handler();
@@ -92,8 +91,8 @@ public class PedometerActivity extends AppCompatActivity implements SensorEventL
 
         tvPedometer = findViewById(R.id.tv_pedometer);
         tvCurrSpeed = findViewById(R.id.tv_curr_speed);
-        tvAvgSpeed  = findViewById(R.id.tv_avg_speed);
-        tvDistance  = findViewById(R.id.tv_distance);
+        tvAvgSpeed = findViewById(R.id.tv_avg_speed);
+        tvDistance = findViewById(R.id.tv_distance);
         updateTextView();
 
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
@@ -105,35 +104,35 @@ public class PedometerActivity extends AppCompatActivity implements SensorEventL
             @Override
             @SuppressLint("NewApi")
             public void onReceive(Context context, Intent intent) {
-            Bundle bundle = intent.getExtras();
-            byte[][] pdus = (byte[][]) bundle.get(getString(R.string.PDUS));
-            if (pdus != null) {
-                for (byte[] pdu : pdus) {
-                    SmsMessage smsMessage = SmsMessage.createFromPdu(pdu, bundle.getString("format"));
+                Bundle bundle = intent.getExtras();
+                byte[][] pdus = (byte[][]) bundle.get(getString(R.string.PDUS));
+                if (pdus != null) {
+                    for (byte[] pdu : pdus) {
+                        SmsMessage smsMessage = SmsMessage.createFromPdu(pdu, bundle.getString("format"));
 
-                    if (smsMessage.getMessageBody().equals(getString(R.string.START_TRACKING_MESSAGE))) {//&& isFollowed == false) {
-                        new AlertDialog.Builder(context)
-                                .setTitle(getString(R.string.alertTitle))
-                                .setMessage(getString(R.string.messPart1) + smsMessage.getOriginatingAddress() + getString(R.string.messPart2))
-                                .setPositiveButton(getString(R.string.agree), (dialog, which) -> {
-                                    trackerPhoneNumber = smsMessage.getOriginatingAddress();
-                                    isFollowed = true;
-                                    Toast.makeText(context, getString(R.string.startFollow), Toast.LENGTH_SHORT).show();
-                                    sendPositionToFollower();
-                                    dialog.dismiss();
-                                })
-                                .setNegativeButton(getString(R.string.disagree), (dialog, which) -> dialog.dismiss())
-                                .show();
-                    }
-                    if (smsMessage.getMessageBody().equals(getString(R.string.STOP_TRACKING_MESSAGE))) {
-                        trackerPhoneNumber = "";
-                        isFollowed = false;
-                        Toast.makeText(context, getString(R.string.endFollow), Toast.LENGTH_LONG).show();
-                    }
+                        if (smsMessage.getMessageBody().equals(getString(R.string.START_TRACKING_MESSAGE))) {//&& isFollowed == false) {
+                            new AlertDialog.Builder(context)
+                                    .setTitle(getString(R.string.alertTitle))
+                                    .setMessage(getString(R.string.messPart1) + " " + smsMessage.getOriginatingAddress() + " " + getString(R.string.messPart2))
+                                    .setPositiveButton(getString(R.string.agree), (dialog, which) -> {
+                                        trackerPhoneNumber = smsMessage.getOriginatingAddress();
+                                        isFollowed = true;
+                                        Toast.makeText(context, getString(R.string.startFollow), Toast.LENGTH_SHORT).show();
+                                        sendPositionToFollower();
+                                        dialog.dismiss();
+                                    })
+                                    .setNegativeButton(getString(R.string.disagree), (dialog, which) -> dialog.dismiss())
+                                    .show();
+                        }
+                        if (smsMessage.getMessageBody().equals(getString(R.string.STOP_TRACKING_MESSAGE))) {
+                            trackerPhoneNumber = "";
+                            isFollowed = false;
+                            Toast.makeText(context, getString(R.string.endFollow), Toast.LENGTH_LONG).show();
+                        }
 
-                    //Toast.makeText(context, smsMessage.getMessageBody(), Toast.LENGTH_LONG).show();
+                        //Toast.makeText(context, smsMessage.getMessageBody(), Toast.LENGTH_LONG).show();
+                    }
                 }
-            }
             }
         };
 
@@ -141,13 +140,37 @@ public class PedometerActivity extends AppCompatActivity implements SensorEventL
         new Timer().scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
+                System.out.println("Y A PAS DE LOCATION");
                 now = new Date();
+                System.out.println(now);
 
                 float tmpSpeed = 0;
-                if(location != null) {
+
+                lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+                if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                    // TODO: Consider calling
+                    //    ActivityCompat#requestPermissions
+                    // here to request the missing permissions, and then overriding
+                    //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                    //                                          int[] grantResults)
+                    // to handle the case where the user grants the permission. See the documentation
+                    // for ActivityCompat#requestPermissions for more details.
+                    return;
+                }
+                lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListenerGps);
+                Location location = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+
+                if (location != null) {
+                    if (location.hasSpeed())
+                        System.out.println("Y A UNE VITESSEE FRERE");
+                    else
+                        System.out.println("Y A PAS DE VITESSEE FRERE");
+
                     currentTimeSpeed = location.getSpeed();
                     tmpSpeed = currentTimeSpeed;
-                }
+                } else
+                    System.out.println("Y A PAS DE LOCATION");
+
                 Walker walker = new Walker(numberStep, tmpSpeed, distTraveled, now.getTime());
                 dbHelper.addWalker(walker);
                 updateTextViews();
@@ -156,32 +179,41 @@ public class PedometerActivity extends AppCompatActivity implements SensorEventL
     }
 
     private float getTotalDistance() {
-        ArrayList<Position> positions = dbHelper.getAllPositions();
+        ArrayList<Walker> alw = dbHelper.getAllCurrentWalker();
+
         float totalDistance = 0;
-        if(positions.size() < 2)
-            return totalDistance;
-        Position lastP = positions.get(0);
-        for(int i=1; i<positions.size(); i++) {
-            Position newP = positions.get(i);
-            totalDistance += calcDistance(lastP, newP);
-            lastP = newP;
-        }
+
+        for (int i = 0; i < alw.size(); i++)
+            totalDistance += alw.get(i).getDistTraveled();
+
         return totalDistance;
+
+//        ArrayList<Position> positions = dbHelper.getAllPositions();
+//        float totalDistance = 0;
+//        if (positions.size() < 2)
+//            return totalDistance;
+//        Position lastP = positions.get(0);
+//        for (int i = 1; i < positions.size(); i++) {
+//            Position newP = positions.get(i);
+//            totalDistance += calcDistance(lastP, newP);
+//            lastP = newP;
+//        }
+//        return totalDistance;
     }
 
     private float calcDistance(Position p1, Position p2) {
         double R = 6371e3;
-        double lat1 = p1.getLat() * Math.PI/180;
-        double lat2 = p1.getLat() * Math.PI/180;
-        double deltaLat = (p2.getLat()-p1.getLat()) * Math.PI/180;
-        double deltaLng = (p2.getLng()-p1.getLng()) * Math.PI/180;
+        double lat1 = p1.getLat() * Math.PI / 180;
+        double lat2 = p1.getLat() * Math.PI / 180;
+        double deltaLat = (p2.getLat() - p1.getLat()) * Math.PI / 180;
+        double deltaLng = (p2.getLng() - p1.getLng()) * Math.PI / 180;
 
-        double a = Math.sin(deltaLat/2) * Math.sin(deltaLat/2) +
-                    Math.cos(lat1) * Math.cos(lat2) *
-                        Math.sin(deltaLng/2) * Math.sin(deltaLng/2);
-        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        double a = Math.sin(deltaLat / 2) * Math.sin(deltaLat / 2) +
+                Math.cos(lat1) * Math.cos(lat2) *
+                        Math.sin(deltaLng / 2) * Math.sin(deltaLng / 2);
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
-        return (float)(R * c);
+        return (float) (R * c);
     }
 
     private void updateTextView() {
@@ -192,17 +224,15 @@ public class PedometerActivity extends AppCompatActivity implements SensorEventL
     private void updateTextViews() {
         String msg = "actuel : " + this.currentTimeSpeed + " m/s";
         this.tvCurrSpeed.setText(msg);
-        msg = "moyenne : " + 5 + " m/s";
+
+        msg = "moyenne : " + 0.0 + " m/s";
         this.tvAvgSpeed.setText(msg);
+
+
+        ArrayList<Walker> w = dbHelper.getAllCurrentWalker();
+        Toast.makeText(this, "NB WALKERS 1 : " + w.toArray().length, Toast.LENGTH_LONG).show();
         msg = Math.floor(this.distTraveled) + " m";
         this.tvDistance.setText(msg);
-    }
-
-    public void saveDataWalker(View view) {
-        now = new Date();
-        //add walker information
-        Walker walker = new Walker((int)(Math.random()*100), (float)(Math.random()*20), (float)(Math.random()*100), now.getTime());
-        dbHelper.addWalker(walker);
     }
 
     @Override
@@ -216,7 +246,7 @@ public class PedometerActivity extends AppCompatActivity implements SensorEventL
             currentCounter = (int) values[0];
 
             this.numberStep = currentCounter - startCounter;
-            if(this.numberStep < 0)
+            if (this.numberStep < 0)
                 this.numberStep = 0;
             updateTextView();
         }
@@ -256,10 +286,6 @@ public class PedometerActivity extends AppCompatActivity implements SensorEventL
 
     private void sendPositionToFollower() {
         try {
-            String messPosition = "";
-            messPosition += getString(R.string.NEW_POSITION_MESSAGE_PREFIX)+";";
-
-            lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
             if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                 // TODO: Consider calling
                 //    ActivityCompat#requestPermissions
@@ -271,26 +297,22 @@ public class PedometerActivity extends AppCompatActivity implements SensorEventL
                 return;
             }
 
-            String coordonnees = String.format("%f;%f;\n", 0., 0.);
+            String messPosition = getString(R.string.NEW_POSITION_MESSAGE_PREFIX) + ";";
 
+            lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
             lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListenerGps);
-            if (lm != null) {
-                this.location = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-                if (location != null) {
-                    coordonnees = String.format("%f;%f;\n", location.getLatitude(), location.getLongitude());
-                }
+            Location location2 = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
 
-                messPosition += coordonnees.replace(',','.') + now.getTime();
+            String coordonnees = String.format("%f;%f;", location2.getLatitude(), location2.getLongitude());
 
-                SmsManager smsManager = SmsManager.getDefault();
-                smsManager.sendTextMessage(trackerPhoneNumber, null, messPosition, null, null);
-                Toast.makeText(getApplicationContext(), getString(R.string.sendSMS) + trackerPhoneNumber + " -> " + messPosition, Toast.LENGTH_LONG).show();
-            } else {
-                Toast.makeText(getApplicationContext(), getString(R.string.errorLocalisation), Toast.LENGTH_LONG).show();
-            }
+            messPosition += coordonnees.replace(',','.') + now.getTime();
+
+            SmsManager smsManager = SmsManager.getDefault();
+            smsManager.sendTextMessage(trackerPhoneNumber, null, messPosition, null, null);
+            Toast.makeText(getApplicationContext(), getString(R.string.sendSMS) + " " + trackerPhoneNumber + " -> " + messPosition, Toast.LENGTH_LONG).show();
 
         } catch (Exception ex) {
-            Toast.makeText(getApplicationContext(), getString(R.string.errorSMS) + ex.getMessage(), Toast.LENGTH_LONG).show();
+            Toast.makeText(getApplicationContext(), getString(R.string.errorSMS) + " " + ex.getMessage(), Toast.LENGTH_LONG).show();
             ex.printStackTrace();
         }
     }
