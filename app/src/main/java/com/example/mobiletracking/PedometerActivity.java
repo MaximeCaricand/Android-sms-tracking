@@ -70,6 +70,18 @@ public class PedometerActivity extends AppCompatActivity implements SensorEventL
     private LocationListener locationListenerGps = new LocationListener() {
         public void onLocationChanged(Location location) {
             lm.removeUpdates(this);
+            lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+            if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                // TODO: Consider calling
+                //    ActivityCompat#requestPermissions
+                // here to request the missing permissions, and then overriding
+                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                //                                          int[] grantResults)
+                // to handle the case where the user grants the permission. See the documentation
+                // for ActivityCompat#requestPermissions for more details.
+                return;
+            }
+            lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListenerGps);
         }
 
         public void onProviderDisabled(String provider) {
@@ -93,7 +105,8 @@ public class PedometerActivity extends AppCompatActivity implements SensorEventL
         tvCurrSpeed = findViewById(R.id.tv_curr_speed);
         tvAvgSpeed = findViewById(R.id.tv_avg_speed);
         tvDistance = findViewById(R.id.tv_distance);
-        updateTextView();
+        updateStep();
+        getCurrentAvgAndDist();
 
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         pedometer = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER);
@@ -137,68 +150,67 @@ public class PedometerActivity extends AppCompatActivity implements SensorEventL
         };
 
         registerReceiver(smsReceiver, new IntentFilter(getString(R.string.SMS_BR_INTENT_ACTION)));
+
+        lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
+        lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListenerGps);
+
         new Timer().scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
-                System.out.println("Y A PAS DE LOCATION");
                 now = new Date();
-                System.out.println(now);
 
-                float tmpSpeed = 0;
-
-                lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-                if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                    // TODO: Consider calling
-                    //    ActivityCompat#requestPermissions
-                    // here to request the missing permissions, and then overriding
-                    //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-                    //                                          int[] grantResults)
-                    // to handle the case where the user grants the permission. See the documentation
-                    // for ActivityCompat#requestPermissions for more details.
-                    return;
-                }
-                lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListenerGps);
                 Location location = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
 
-                if (location != null) {
-                    if (location.hasSpeed())
-                        System.out.println("Y A UNE VITESSEE FRERE");
-                    else
-                        System.out.println("Y A PAS DE VITESSEE FRERE");
-
+                currentTimeSpeed = 0;
+                if (location != null && location.hasSpeed())
                     currentTimeSpeed = location.getSpeed();
-                    tmpSpeed = currentTimeSpeed;
-                } else
-                    System.out.println("Y A PAS DE LOCATION");
 
-                Walker walker = new Walker(numberStep, tmpSpeed, distTraveled, now.getTime());
+                Walker walker = new Walker(numberStep, currentTimeSpeed, currentTimeSpeed, now.getTime());
                 dbHelper.addWalker(walker);
-                updateTextViews();
+                getCurrentAvgAndDist();
             }
         }, 1000, 1000);
     }
 
-    private float getTotalDistance() {
+    private void getCurrentAvgAndDist() {
         ArrayList<Walker> alw = dbHelper.getAllCurrentWalker();
 
+        distTraveled = 0;
+        avgTimeSpeed = 0;
+
+        for (int i = 0; i < alw.size(); i++) {
+            distTraveled += alw.get(i).getDistTraveled();
+            avgTimeSpeed += alw.get(i).getCurrentTimeSpeed();
+        }
+
+        if (alw.size() > 0)
+            avgTimeSpeed /= alw.size();
+
+        updateTextViews();
+    }
+
+    /*private float getTotalDistance() {
+        ArrayList<Position> positions = dbHelper.getAllPositions();
         float totalDistance = 0;
-
-        for (int i = 0; i < alw.size(); i++)
-            totalDistance += alw.get(i).getDistTraveled();
-
+        if (positions.size() < 2)
+            return totalDistance;
+        Position lastP = positions.get(0);
+        for (int i = 1; i < positions.size(); i++) {
+            Position newP = positions.get(i);
+            totalDistance += calcDistance(lastP, newP);
+            lastP = newP;
+        }
         return totalDistance;
-
-//        ArrayList<Position> positions = dbHelper.getAllPositions();
-//        float totalDistance = 0;
-//        if (positions.size() < 2)
-//            return totalDistance;
-//        Position lastP = positions.get(0);
-//        for (int i = 1; i < positions.size(); i++) {
-//            Position newP = positions.get(i);
-//            totalDistance += calcDistance(lastP, newP);
-//            lastP = newP;
-//        }
-//        return totalDistance;
     }
 
     private float calcDistance(Position p1, Position p2) {
@@ -214,24 +226,21 @@ public class PedometerActivity extends AppCompatActivity implements SensorEventL
         double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
         return (float) (R * c);
-    }
+    }*/
 
-    private void updateTextView() {
+    private void updateStep() {
         String msg = this.numberStep + " PAS";
         tvPedometer.setText(msg);
     }
 
     private void updateTextViews() {
-        String msg = "actuel : " + this.currentTimeSpeed + " m/s";
+        String msg = "actuel : " + String.format("%.2f", this.currentTimeSpeed) + " m/s";
         this.tvCurrSpeed.setText(msg);
 
-        msg = "moyenne : " + 0.0 + " m/s";
+        msg = "moyenne : " + String.format("%.2f", this.avgTimeSpeed) + " m/s";
         this.tvAvgSpeed.setText(msg);
 
-
-        ArrayList<Walker> w = dbHelper.getAllCurrentWalker();
-        Toast.makeText(this, "NB WALKERS 1 : " + w.toArray().length, Toast.LENGTH_LONG).show();
-        msg = Math.floor(this.distTraveled) + " m";
+        msg = String.format("%.2f", this.distTraveled) + " m";
         this.tvDistance.setText(msg);
     }
 
@@ -248,7 +257,7 @@ public class PedometerActivity extends AppCompatActivity implements SensorEventL
             this.numberStep = currentCounter - startCounter;
             if (this.numberStep < 0)
                 this.numberStep = 0;
-            updateTextView();
+            updateStep();
         }
     }
 
@@ -264,8 +273,8 @@ public class PedometerActivity extends AppCompatActivity implements SensorEventL
                 if (isFollowed) {
                     now = new Date();
                     //add walker information
-                    Walker walker = new Walker(numberStep, currentTimeSpeed, distTraveled, now.getTime());
-                    dbHelper.addWalker(walker);
+                    //Walker walker = new Walker(numberStep, currentTimeSpeed, distTraveled, now.getTime());
+                    //dbHelper.addWalker(walker);
                     //send sms to tracker
                     sendPositionToFollower();
                 }
